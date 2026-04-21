@@ -1,6 +1,7 @@
 # INDEX
 
 | 日期 | 标题 | 路径 | 关键词 |
+| 2026-04-21 | 西海岸 VPS：3x-ui + VLESS-REALITY + Clash 订阅 复刻手册 | docs/2026-04-21-西海岸VPS-3x-ui-VLESS-REALITY-复刻手册.md | vps, 3x-ui, vless, reality, clash, racknerd, handoff |
 |---|---|---|---|
 | 2026-03-02 | 示例：Codex 文档仓库方案 | docs/2026-03-02-仓库方案.md | codex, github, docs |
 | 2026-03-02 | Web 页面健壮性测试平台方案设计（评审稿） | docs/2026-03-02-健壮性测试平台-方案设计.md | 健壮性测试,方案设计,robust-testing |
