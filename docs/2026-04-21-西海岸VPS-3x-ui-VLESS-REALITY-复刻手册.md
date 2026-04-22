@@ -494,6 +494,106 @@ https://<服务器公网 IP>:8443/subscribe.yaml
 - `/clash/<SUB_ID>`：偏“节点订阅”
 - `/subscribe.yaml`：偏“完整配置订阅（含规则）”
 
+
+
+### 当前线上 `subscribe.yaml` 的实际规则内容（参考摘录）
+为避免手册描述和线上配置漂移，以下内容直接摘自当前线上静态订阅：
+
+```text
+https://<服务器公网 IP>:8443/subscribe.yaml
+```
+
+其中与分流最相关的就是下面这段：
+
+```yaml
+rule-providers:
+  reject:
+    type: http
+    behavior: domain
+    path: ./ruleset/reject.yaml
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/reject.txt
+    interval: 86400
+    proxy: 美国🇺🇸-西海岸-01
+  private:
+    type: http
+    behavior: domain
+    path: ./ruleset/private.yaml
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/private.txt
+    interval: 86400
+    proxy: 美国🇺🇸-西海岸-01
+  icloud:
+    type: http
+    behavior: domain
+    path: ./ruleset/icloud.yaml
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/icloud.txt
+    interval: 86400
+    proxy: 美国🇺🇸-西海岸-01
+  apple:
+    type: http
+    behavior: domain
+    path: ./ruleset/apple.yaml
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/apple.txt
+    interval: 86400
+    proxy: 美国🇺🇸-西海岸-01
+  google:
+    type: http
+    behavior: domain
+    path: ./ruleset/google.yaml
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/google.txt
+    interval: 86400
+    proxy: 美国🇺🇸-西海岸-01
+  proxy:
+    type: http
+    behavior: domain
+    path: ./ruleset/proxy.yaml
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/proxy.txt
+    interval: 86400
+    proxy: 美国🇺🇸-西海岸-01
+  direct:
+    type: http
+    behavior: domain
+    path: ./ruleset/direct.yaml
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt
+    interval: 86400
+    proxy: 美国🇺🇸-西海岸-01
+  lancidr:
+    type: http
+    behavior: ipcidr
+    path: ./ruleset/lancidr.yaml
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/lancidr.txt
+    interval: 86400
+    proxy: 美国🇺🇸-西海岸-01
+  cncidr:
+    type: http
+    behavior: ipcidr
+    path: ./ruleset/cncidr.yaml
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/cncidr.txt
+    interval: 86400
+    proxy: 美国🇺🇸-西海岸-01
+rules:
+  - IP-CIDR,<服务器公网 IP>/32,DIRECT,no-resolve
+  - DOMAIN-SUFFIX,huoban.ai,DIRECT
+  - DOMAIN-SUFFIX,doudou.fun,DIRECT
+  - DOMAIN-SUFFIX,doudou.ai,DIRECT
+  - DOMAIN,clash.razord.top,DIRECT
+  - DOMAIN,yacd.haishan.me,DIRECT
+  - RULE-SET,private,DIRECT
+  - RULE-SET,reject,REJECT
+  - RULE-SET,icloud,DIRECT
+  - RULE-SET,apple,DIRECT
+  - RULE-SET,google,PROXY
+  - RULE-SET,proxy,PROXY
+  - RULE-SET,direct,DIRECT
+  - RULE-SET,lancidr,DIRECT
+  - RULE-SET,cncidr,DIRECT
+  - GEOIP,LAN,DIRECT
+  - MATCH,PROXY
+```
+
+说明：
+- 如果未来调整了广告拦截、国内直连或默认出口策略，请以服务器上的 `subscribe.yaml` 为真相源。
+- 文档里保留这段，是为了让后续会话在“重新生成 YAML”时，有一份和线上一致的参考基线。
+
 ### 后续轮换时要同步更新什么
 如果后面轮换了这些参数：
 - UUID
