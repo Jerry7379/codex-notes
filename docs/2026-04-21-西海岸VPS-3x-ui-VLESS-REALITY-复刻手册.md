@@ -405,7 +405,114 @@ curl -sk -b /tmp/xui.cookie \
 
 ---
 
-## 9. 当前状态一句话总结
+
+## 10. 完整配置订阅（静态 YAML，直接自带 rules）
+
+### 目的
+前面的 `/clash/<SUB_ID>` 更适合做“节点订阅”，它会返回：
+- `proxies`
+- `proxy-groups`
+- `rules: [MATCH,PROXY]`
+
+如果想像一些第三方订阅那样“通过一个 URL 直接带上完整规则”，就需要额外托管一份**完整 Clash/Mihomo YAML**。
+
+本次已在服务器上额外部署了一个独立 HTTPS 静态服务，用来托管这份完整配置。
+
+### 当前落地方式
+- 静态目录：`/srv/clash-sub`
+- YAML 文件：`/srv/clash-sub/subscribe.yaml`
+- 服务脚本：`/usr/local/bin/codex_https_static.py`
+- systemd 服务：`codex-clash-sub.service`
+- 监听端口：`8443`
+- 对外地址：`https://<服务器公网 IP>:8443/subscribe.yaml`
+
+### 这份完整配置里已经包含
+- `dns`
+- `proxies`
+- `proxy-groups`
+- `rule-providers`
+- `rules`
+
+规则目标是：
+- 国内已知直连
+- 广告拦截
+- 其余走代理
+- 默认走 `美国🇺🇸-西海岸-01`
+- 拿不准的地址不直连，最终由 `MATCH,PROXY` 兜底
+
+### 服务器上生成文件的思路
+核心不是修改 3x-ui 自带的 `/clash/<SUB_ID>`，而是：
+1. 从 `/root/xui-add-meta.json` 读取当前节点参数
+2. 用这些参数拼出一份完整的 Mihomo YAML
+3. 写入 `/srv/clash-sub/subscribe.yaml`
+4. 通过独立 HTTPS 静态服务对外提供
+
+受信环境中可这样查看：
+```bash
+cat /root/xui-add-meta.json
+sed -n '1,220p' /srv/clash-sub/subscribe.yaml
+systemctl status codex-clash-sub.service --no-pager -n 20
+ss -ltnp | grep ':8443 '
+```
+
+### 静态 HTTPS 服务实现
+服务脚本本质上是一个 Python `http.server`，外层包了一层 TLS：
+- 证书：`/root/cert/ip/fullchain.pem`
+- 私钥：`/root/cert/ip/privkey.pem`
+
+服务文件位置：
+```text
+/etc/systemd/system/codex-clash-sub.service
+```
+
+常用管理命令：
+```bash
+systemctl restart codex-clash-sub.service
+systemctl status codex-clash-sub.service --no-pager -n 20
+journalctl -u codex-clash-sub.service -n 100 --no-pager
+```
+
+### 远程验证方法
+服务器本机：
+```bash
+curl -sk https://127.0.0.1:8443/subscribe.yaml | sed -n '1,120p'
+```
+
+外网侧：
+```bash
+curl -sk https://<服务器公网 IP>:8443/subscribe.yaml | sed -n '1,120p'
+```
+
+### 如何在客户端使用
+Clash Verge / Mihomo 客户端里，直接把下面这个地址当成远程配置导入：
+
+```text
+https://<服务器公网 IP>:8443/subscribe.yaml
+```
+
+它和 3x-ui 自带 `/clash/<SUB_ID>` 的区别是：
+- `/clash/<SUB_ID>`：偏“节点订阅”
+- `/subscribe.yaml`：偏“完整配置订阅（含规则）”
+
+### 后续轮换时要同步更新什么
+如果后面轮换了这些参数：
+- UUID
+- Reality public-key
+- short-id
+- 节点地址/端口
+
+那么除了客户端节点本身，`/srv/clash-sub/subscribe.yaml` 也要同步更新，不然这个“完整配置订阅”会失效。
+
+### 一句话理解
+以后如果想“像第三方订阅那样，一个 URL 导入就带完整 rules”，应该优先维护：
+
+```text
+https://<服务器公网 IP>:8443/subscribe.yaml
+```
+
+而不是把这个需求压到 3x-ui 默认的 `/clash/<SUB_ID>` 上。
+
+## 11. 当前状态一句话总结
 
 这台西海岸 VPS 已完成：
 - 3x-ui 安装
